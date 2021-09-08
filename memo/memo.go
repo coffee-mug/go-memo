@@ -31,3 +31,14 @@ func (m Memo) Save() (id int, err error) {
 	id, err = m.r.Save(m)
 	return
 }
+
+func (m Memo) Get(id int) (mo *Memo, err error) {
+	mo, err = m.r.Get(id)
+	return
+}
+
+func (m Memo) List(offset int, count int) (ms []Memo, err error) {
+	ms, err = m.r.List(offset, count)
+	return
+
+}

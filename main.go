@@ -2,36 +2,32 @@ package main
 
 import (
 	"github.com/coffee-mug/go-memo/memo"
+	"github.com/coffee-mug/go-memo/storage"
 	"log"
 )
 
-type MemoryRepository struct {
-	data []memo.Memo
-}
-
-func (m *MemoryRepository) Save(mo memo.Memo) (id int, err error) {
-	m.data = append(m.data, mo)
-	id = len(m.data)
-
-	return id - 1, nil
-}
-
-func NewMemoryRepository() *MemoryRepository {
-	d := make([]memo.Memo, 0, 10)
-	return &MemoryRepository{
-		data: d,
-	}
-}
-
 
 func main() {
-	r := NewMemoryRepository()
+	r := storage.NewMemoryRepository()
 
 	m := memo.NewMemo(r, []byte("This is a title"), []byte("This is a body"))
 
+	// TODO: Move below in relevant test cases
+	// Test save
 	id, _ := m.Save()
 	log.Println(id)
 
+	m.Title = []byte("Index 1")
+
 	id, _ = m.Save()
 	log.Println(id)
+
+	// Test GET
+	mo, _ := m.Get(1)
+	log.Println(string(mo.Title))
+
+	// Test LIST
+	ms, _ := m.List(0, 2)
+	log.Printf("Total memos count: %d", len(ms))
+
 }
