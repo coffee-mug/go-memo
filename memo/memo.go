@@ -1,18 +1,20 @@
 package memo 
 
 import (
+	"log"
 	"time"
+	"errors"
 )
 
 type Memo struct {
-	Title []byte
-	Body []byte
+	Title string
+	Body string 
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	r MemoRepository
 }
 
-func NewMemo(repo MemoRepository, title []byte, body []byte) Memo {
+func NewMemo(repo MemoRepository, title string, body string) Memo {
 	createdAt := time.Now()
 	updatedAt := time.Now()
 
@@ -38,6 +40,20 @@ func (m Memo) Get(id int) (mo *Memo, err error) {
 }
 
 func (m Memo) List(offset int, count int) (ms []Memo, err error) {
+	data, err := m.r.Data()
+
+	log.Printf("%v", data)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if count + offset > len(data) {
+		return nil, errors.New("Invalid range")
+	}
+
+	if count == -1 {
+		count = len(data)
+	} 
+
 	ms, err = m.r.List(offset, count)
 	return
 

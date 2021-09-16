@@ -24,11 +24,11 @@ func (m *MemoryRepository) Get(id int) (mo *memo.Memo, err error) {
 	return nil, errors.New("No entry for provided index")
 }
 
-func (m *MemoryRepository) List(offset, count int) (ms []memo.Memo, err error) {
-	if (offset + count) > len(m.data) {
-		return nil, errors.New("offset + count overflows")
-	}
+func (m *MemoryRepository) Data() (ms []memo.Memo, err error) {
+	return m.data, nil
+}
 
+func (m *MemoryRepository) List(offset, count int) (ms []memo.Memo, err error) {
 	return m.data[offset:offset+count], nil
 }
 

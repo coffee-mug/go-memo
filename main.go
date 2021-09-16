@@ -1,33 +1,46 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"html/template"
+	"net/http"
 	"github.com/coffee-mug/go-memo/memo"
 	"github.com/coffee-mug/go-memo/storage"
-	"log"
 )
 
 
 func main() {
-	r := storage.NewMemoryRepository()
+	memoStorage := storage.NewMemoryRepository()
 
-	m := memo.NewMemo(r, []byte("This is a title"), []byte("This is a body"))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
+		m := memo.NewMemo(memoStorage, "This is a title", "This is a body")
 
-	// TODO: Move below in relevant test cases
-	// Test save
-	id, _ := m.Save()
-	log.Println(id)
+		mo, _ := m.List(0,-1)
 
-	m.Title = []byte("Index 1")
+		tmpl, err := template.New("test").Parse("<h1>Some thoughts</h1> {{range .}} <article> <h2> {{.Title}} </h2> <div>{{.Body}} </div> <article> {{end}}</p>")
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	id, _ = m.Save()
-	log.Println(id)
+		tmpl.Execute(w, mo)
+	})
 
-	// Test GET
-	mo, _ := m.Get(1)
-	log.Println(string(mo.Title))
+	http.HandleFunc("/store", func (w http.ResponseWriter, r *http.Request){
+		if r.Method != "POST" {
+			fmt.Fprint(w, "Invalid method")
+			return
+		}
 
-	// Test LIST
-	ms, _ := m.List(0, 2)
-	log.Printf("Total memos count: %d", len(ms))
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+
+		m := memo.NewMemo(memoStorage, r.FormValue("title"), r.FormValue("memo"))
+		m.Save()
+	})
+
+	http.ListenAndServe("127.0.0.1:9999", nil)
 
 }
